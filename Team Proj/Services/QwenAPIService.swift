@@ -12,16 +12,53 @@ class QwenAPIService {
     
     // 百炼智能体应用配置
     private let apiKey = "sk-d0b2e8afcc584f0ab1bc74d5c541fa21"
-    private let appId = "a08393d338c74e59a2fd2ae84f93b265"
+    
+    // 聊天智能体 App ID
+    private let chatAppId = "a08393d338c74e59a2fd2ae84f93b265"
+    
+    // 出题智能体 App ID
+    private let quizAppId = "d2f0226f214749dd8bc5cd4f66bcb3f1"
+    
     private var sessionId: String?
     
-    private var apiEndpoint: String {
+    private func apiEndpoint(for appId: String) -> String {
         return "https://dashscope.aliyuncs.com/api/v1/apps/\(appId)/completion"
     }
     
     private init() {}
     
+    // 发送聊天消息
     func sendMessage(_ message: String) async throws -> String {
+        return try await sendRequest(message: message, appId: chatAppId, useSession: true)
+    }
+    
+    // 生成题目（单题或多题）
+    func generateQuiz(prompt: String) async throws -> [QuizQuestion] {
+        let response = try await sendRequest(message: prompt, appId: quizAppId, useSession: false)
+        
+        // 清理可能的 markdown 代码块标记
+        let cleanedResponse = response
+            .replacingOccurrences(of: "```json", with: "")
+            .replacingOccurrences(of: "```", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 尝试解析为数组
+        if let data = cleanedResponse.data(using: .utf8) {
+            // 首先尝试解析为数组（多题）
+            if let questions = try? JSONDecoder().decode([QuizQuestion].self, from: data) {
+                return questions
+            }
+            // 如果失败，尝试解析为单个对象
+            else if let question = try? JSONDecoder().decode(QuizQuestion.self, from: data) {
+                return [question]
+            }
+        }
+        
+        throw APIError.parsingError
+    }
+    
+    // 通用请求方法
+    private func sendRequest(message: String, appId: String, useSession: Bool) async throws -> String {
         // 准备请求体（按照智能体应用API格式）
         var requestBody: [String: Any] = [
             "input": [
@@ -32,8 +69,8 @@ class QwenAPIService {
             ]
         ]
         
-        // 如果有会话ID，携带历史对话
-        if let sessionId = sessionId {
+        // 如果需要使用会话ID，携带历史对话
+        if useSession, let sessionId = sessionId {
             if var input = requestBody["input"] as? [String: Any] {
                 input["session_id"] = sessionId
                 requestBody["input"] = input
@@ -41,7 +78,7 @@ class QwenAPIService {
         }
         
         // 创建URL请求
-        guard let url = URL(string: apiEndpoint) else {
+        guard let url = URL(string: apiEndpoint(for: appId)) else {
             throw APIError.invalidURL
         }
         
@@ -76,8 +113,8 @@ class QwenAPIService {
             throw APIError.parsingError
         }
         
-        // 保存会话ID，用于后续对话
-        if let output = json["output"] as? [String: Any],
+        // 保存会话ID，用于后续对话（仅聊天智能体）
+        if useSession, let output = json["output"] as? [String: Any],
            let newSessionId = output["session_id"] as? String {
             self.sessionId = newSessionId
         }

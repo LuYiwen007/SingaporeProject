@@ -40,7 +40,7 @@ struct QuizQuestionView: View {
             // Options
             VStack(spacing: AppTheme.Spacing.medium) {
                 ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
-                    OptionButton(
+                    QuizOptionButton(
                         option: option,
                         index: index,
                         isSelected: selectedAnswer == index,
@@ -95,7 +95,7 @@ struct QuizQuestionView: View {
     }
 }
 
-struct OptionButton: View {
+struct QuizOptionButton: View {
     let option: String
     let index: Int
     let isSelected: Bool
@@ -186,20 +186,12 @@ struct OptionButton: View {
     QuizQuestionView(
         question: QuizQuestion(
             question: "What does 'learn' mean?",
-            options: [
-                "To gain knowledge",
-                "To forget things",
-                "To teach others",
-                "To play games"
-            ],
-            correctAnswerIndex: 0,
-            word: Word(
-                word: "learn",
-                definition: "To gain knowledge or skill",
-                examples: ["I learn English"],
-                synonyms: ["study"],
-                category: .verb
-            )
+            optionA: "To gain knowledge",
+            optionB: "To forget things",
+            optionC: "To teach others",
+            optionD: "To play games",
+            correctAnswer: "A",
+            explanation: "'learn' means to gain knowledge or skill by studying, practicing, or being taught."
         ),
         onAnswerSelected: { _ in }
     )

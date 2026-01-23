@@ -250,11 +250,17 @@ struct PracticeView: View {
         options.shuffle()
         let correctIndex = options.firstIndex(of: correctDefinition) ?? 0
         
+        // Convert index to letter
+        let correctAnswer = ["A", "B", "C", "D"][correctIndex]
+        
         return QuizQuestion(
             question: "What does '\(word.word)' mean?",
-            options: options,
-            correctAnswerIndex: correctIndex,
-            word: word
+            optionA: options[0],
+            optionB: options[1],
+            optionC: options[2],
+            optionD: options[3],
+            correctAnswer: correctAnswer,
+            explanation: "'\(word.word)' means \(word.definition)"
         )
     }
     
@@ -273,11 +279,17 @@ struct PracticeView: View {
         options.shuffle()
         let correctIndex = options.firstIndex(of: correctExample) ?? 0
         
+        // Convert index to letter
+        let correctAnswer = ["A", "B", "C", "D"][correctIndex]
+        
         return QuizQuestion(
             question: "Which sentence correctly uses '\(word.word)'?",
-            options: options,
-            correctAnswerIndex: correctIndex,
-            word: word
+            optionA: options[0],
+            optionB: options[1],
+            optionC: options[2],
+            optionD: options[3],
+            correctAnswer: correctAnswer,
+            explanation: "This sentence correctly demonstrates the usage of '\(word.word)' which means \(word.definition)"
         )
     }
     
@@ -302,11 +314,17 @@ struct PracticeView: View {
         options.shuffle()
         let correctIndex = options.firstIndex(of: correctSynonym) ?? 0
         
+        // Convert index to letter
+        let correctAnswer = ["A", "B", "C", "D"][correctIndex]
+        
         return QuizQuestion(
             question: "Which word is a synonym for '\(word.word)'?",
-            options: options,
-            correctAnswerIndex: correctIndex,
-            word: word
+            optionA: options[0],
+            optionB: options[1],
+            optionC: options[2],
+            optionD: options[3],
+            correctAnswer: correctAnswer,
+            explanation: "'\(correctSynonym)' is a synonym for '\(word.word)', which means \(word.definition)"
         )
     }
 }
